@@ -1,0 +1,84 @@
+<?php
+/**
+ * @file
+ * Example module.
+ */
+
+ function drupal_test_menu() {
+  $items = array();
+
+  // Display configuration
+  $items['rental/%'] = array(
+    'title' => 'Rental feed',
+    'page callback' => '_get_rental_by_id',
+    'page arguments' => array(1),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+ }
+
+ // Answer 2
+ function _get_rental_by_id($id) {
+   $result = _get_json_by_id($id);
+   //  end of time
+ }
+
+/**
+ * Implements hook_block_info().
+ */
+function drupal_test_block_info() {
+  // This example comes from node.module.
+  $blocks['test_block'] = array(
+    'info' => t('Test / retrieve data from URL via json'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function drupal_test_block_view($delta='') {
+  $block = array();
+  switch($delta) {
+    case 'test_block' :
+      $block['content'] = array('#markup' => _get_json());
+      break;
+  }
+
+  return $block;
+}
+
+// Answer 1
+function _get_json() {
+  $output = '';
+  // Get json
+  $json_url = "http://work_p/drupal-test/rental.json";
+  // Parse json.
+  $request = drupal_http_request($json_url);
+
+  // Logger error if any.
+  if ($request->code != 200) {
+    watchdog('Test', 'Test bla bla: ', array(), WATCHDOG_WARNING);
+  }
+
+  // Decode result.
+  $output = json_decode($request->data);
+  // Remove image from object.
+  unset($output->image);
+  return $output;
+}
+
+function _get_json_by_id($id) {
+  $output = '';
+  // Get json
+  $json_url = "http://work_p/drupal-test/rental.json?id=" . $id;
+  // Parse json.
+  $request = drupal_http_request($json_url);
+  // Decode result.
+  $output = json_decode($request->data);
+  return $output;
+}
